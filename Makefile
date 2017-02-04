@@ -1,29 +1,39 @@
-NAME = phusion/baseimage
-VERSION = 0.9.19
+NAME          ?= hilbert/baseimage
+IMAGE_VERSION ?= latest
+# export IMAGE_VERSION=devel
 
-.PHONY: all build test tag_latest release ssh
+.PHONY: all build
+
+# Get the latest git commit ID
+GIT_COMMIT=$(strip $(shell git rev-parse --short HEAD))
+# Get the git repository URL
+GIT_ORIGIN_URL=$(strip $(shell git config --get remote.origin.url))
+# Get the current checkout status
+GIT_NOT_CLEAN_CHECK=$(strip $(shell git status --porcelain))
+
+ifneq (x$(GIT_NOT_CLEAN_CHECK), x)
+DOCKER_TAG_SUFFIX = "-dirty"
+endif
+
+VCS_REF       ?= ${GIT_COMMIT}
+VCS_URL       ?= ${GIT_ORIGIN_URL}
+
 
 all: build
 
+DOCKER_BUILD_OPTS=--pull=true --force-rm=true --rm=true \
+--build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+--build-arg VCS_REF="${VCS_REF}" \
+--build-arg VCS_URL="${VCS_URL}" \
+--build-arg GIT_NOT_CLEAN_CHECK="${GIT_NOT_CLEAN_CHECK}" \
+--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
+
 build:
-	docker build -t $(NAME):$(VERSION) --rm image
+	docker build ${DOCKER_BUILD_OPTS} -t "$(NAME):$(IMAGE_VERSION)" image
 
-test:
-	env NAME=$(NAME) VERSION=$(VERSION) ./test/runner.sh
+devel:
+	export IMAGE_VERSION=devel
+	docker build -t $(NAME):$(IMAGE_VERSION) --rm image
 
-tag_latest:
-	docker tag -f $(NAME):$(VERSION) $(NAME):latest
-
-release: test tag_latest
-	@if ! docker images $(NAME) | awk '{ print $$2 }' | grep -q -F $(VERSION); then echo "$(NAME) version $(VERSION) is not yet built. Please run 'make build'"; false; fi
-	@if ! head -n 1 Changelog.md | grep -q 'release date'; then echo 'Please note the release date in Changelog.md.' && false; fi
-	docker push $(NAME)
-	@echo "*** Don't forget to create a tag. git tag rel-$(VERSION) && git push origin rel-$(VERSION)"
-
-ssh:
-	chmod 600 image/services/sshd/keys/insecure_key
-	@ID=$$(docker ps | grep -F "$(NAME):$(VERSION)" | awk '{ print $$1 }') && \
-		if test "$$ID" = ""; then echo "Container is not running."; exit 1; fi && \
-		IP=$$(docker inspect $$ID | grep IPAddr | sed 's/.*: "//; s/".*//') && \
-		echo "SSHing into $$IP" && \
-		ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i image/services/sshd/keys/insecure_key root@$$IP
+pull:
+	docker pull $(NAME):$(IMAGE_VERSION)

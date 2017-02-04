@@ -1,3 +1,5 @@
 .DS_Store
 .vagrant
 *.swp
+*~
+*_*_Dockerfile

@@ -1,5 +1,5 @@
-FROM ubuntu:16.04
-MAINTAINER Phusion <info@phusion.nl>
+FROM ubuntu:14.04
+MAINTAINER Oleksandr Motsak <malex984+hilbert.baseimage@gmail.com>
 
 ADD . /bd_build
 
@@ -10,3 +10,28 @@ RUN /bd_build/prepare.sh && \
 	/bd_build/cleanup.sh
 
 CMD ["/sbin/my_init"]
+
+ARG IMAGE_VERSION=latest
+# Build-time metadata as defined at http://label-schema.org
+ARG BUILD_DATE=someday
+ARG VCS_REF=HEAD
+ARG VCS_URL="https://github.com/hilbert/baseimage"
+# ARG VERSION=${IMAGE_VERSION}
+ARG GIT_NOT_CLEAN_CHECK
+ARG DOCKERFILE="Dockerfile"
+
+LABEL org.label-schema.build-date="${BUILD_DATE}" \
+      org.label-schema.name="Hilbert" \
+      org.label-schema.description="Phusion's baseimage reverted to Ubuntu 14.04 wihtout SSHD" \
+      org.label-schema.vendor="IMAGINARY gGmbH" \
+      org.label-schema.url="https://hilbert.github.io" \
+      org.label-schema.vcs-ref="${VCS_REF}" \
+      org.label-schema.vcs-url="${VCS_URL}" \
+      org.label-schema.version="${IMAGE_VERSION}" \
+      org.label-schema.schema-version="1.0" \
+      com.microscaling.license="Apache-2.0" \
+      com.microscaling.docker.dockerfile="/image/Dockerfile" \
+      IMAGE_VERSION="${IMAGE_VERSION}" \
+      GIT_NOT_CLEAN_CHECK="${GIT_NOT_CLEAN_CHECK}" \
+      DOCKERFILE="${DOCKERFILE}"
+
