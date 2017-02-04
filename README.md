@@ -1,10 +1,11 @@
 # A minimal Ubuntu base image modified for Docker-friendliness
 
-[![](https://badge.imagelayers.io/phusion/baseimage:0.9.17.svg)](https://imagelayers.io/?images=phusion/baseimage:latest 'Get your own badge on imagelayers.io')
+`latest` | [![](https://images.microbadger.com/badges/image/hilbert/baseimage.svg)](https://microbadger.com/images/hilbert/baseimage "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/hilbert/baseimage.svg)](https://microbadger.com/images/hilbert/baseimage "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/commit/hilbert/baseimage.svg)](https://microbadger.com/images/hilbert/baseimage "Get your own commit badge on microbadger.com") [![](https://images.microbadger.com/badges/license/hilbert/baseimage.svg)](https://microbadger.com/images/hilbert/baseimage "Get your own license badge on microbadger.com")
+`devel`  | [![](https://images.microbadger.com/badges/image/hilbert/baseimage:devel.svg)](https://microbadger.com/images/hilbert/baseimage:devel "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/hilbert/baseimage:devel.svg)](https://microbadger.com/images/hilbert/baseimage:devel "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/commit/hilbert/baseimage:devel.svg)](https://microbadger.com/images/hilbert/baseimage:devel "Get your own commit badge on microbadger.com") [![](https://images.microbadger.com/badges/license/hilbert/baseimage:devel.svg)](https://microbadger.com/images/hilbert/baseimage:devel "Get your own license badge on microbadger.com")
 
-_Baseimage-docker only consumes 6 MB RAM and is much powerful than Busybox or Alpine. See why below._
+_baseimage only consumes 6 MB RAM and is much powerful than Busybox or Alpine. See why below._
 
-Baseimage-docker is a special [Docker](https://www.docker.com) image that is configured for correct use within Docker containers. It is Ubuntu, plus:
+baseimage is a special [Docker](https://www.docker.com) image that is configured for correct use within Docker containers. It is Ubuntu, plus:
 
  * Modifications for Docker-friendliness.
  * Administration tools that are especially useful in the context of Docker.
@@ -12,29 +13,29 @@ Baseimage-docker is a special [Docker](https://www.docker.com) image that is con
 
 You can use it as a base for your own Docker images.
 
-Baseimage-docker is available for pulling from [the Docker registry](https://registry.hub.docker.com/u/phusion/baseimage/)!
+Baseimage is available for pulling from [the Docker registry](https://registry.hub.docker.com/u/hilbert/baseimage/)!
 
 ### What are the problems with the stock Ubuntu base image?
 
 Ubuntu is not designed to be run inside Docker. Its init system, Upstart, assumes that it's running on either real hardware or virtualized hardware, but not inside a Docker container. But inside a container you don't want a full system anyway, you want a minimal system. But configuring that minimal system for use within a container has many strange corner cases that are hard to get right if you are not intimately familiar with the Unix system model. This can cause a lot of strange problems.
 
-Baseimage-docker gets everything right. The "Contents" section describes all the things that it modifies.
+Baseimage gets everything right. The "Contents" section describes all the things that it modifies.
 
 <a name="why_use"></a>
-### Why use baseimage-docker?
+### Why use baseimage?
 
-You can configure the stock `ubuntu` image yourself from your Dockerfile, so why bother using baseimage-docker?
+You can configure the stock `ubuntu` image yourself from your Dockerfile, so why bother using baseimage?
 
- * Configuring the base system for Docker-friendliness is no easy task. As stated before, there are many corner cases. By the time that you've gotten all that right, you've reinvented baseimage-docker. Using baseimage-docker will save you from this effort.
+ * Configuring the base system for Docker-friendliness is no easy task. As stated before, there are many corner cases. By the time that you've gotten all that right, you've reinvented baseimage. Using baseimage will save you from this effort.
  * It reduces the time needed to write a correct Dockerfile. You won't have to worry about the base system and can focus on your stack and your app.
  * It reduces the time needed to run `docker build`, allowing you to iterate your Dockerfile more quickly.
  * It reduces download time during redeploys. Docker only needs to download the base image once: during the first deploy. On every subsequent deploys, only the changes you make on top of the base image are downloaded.
 
 -----------------------------------------
 
-**Related resources**:
-  [Website](http://phusion.github.io/baseimage-docker/) |
-  [Github](https://github.com/phusion/baseimage-docker) |
+**Original resources**:
+  [Website](http://phusion.github.io/baseimage/) |
+  [Github](https://github.com/phusion/baseimage) |
   [Docker registry](https://index.docker.io/u/phusion/baseimage/) |
   [Discussion forum](https://groups.google.com/d/forum/passenger-docker) |
   [Twitter](https://twitter.com/phusion_nl) |
@@ -45,9 +46,9 @@ You can configure the stock `ubuntu` image yourself from your Dockerfile, so why
  * [What's inside the image?](#whats_inside)
    * [Overview](#whats_inside_overview)
    * [Wait, I thought Docker is about running a single process in a container?](#docker_single_process)
-   * [Does Baseimage-docker advocate "fat containers" or "treating containers as VMs"?](#fat_containers)
- * [Inspecting baseimage-docker](#inspecting)
- * [Using baseimage-docker as base image](#using)
+   * [Does baseimage advocate "fat containers" or "treating containers as VMs"?](#fat_containers)
+ * [Inspecting baseimage](#inspecting)
+ * [Using baseimage as base image](#using)
    * [Getting started](#getting_started)
    * [Adding additional daemons](#adding_additional_daemons)
    * [Running scripts during container startup](#running_startup_scripts)
@@ -85,64 +86,64 @@ You can configure the stock `ubuntu` image yourself from your Dockerfile, so why
 
 | Component        | Why is it included? / Remarks |
 | ---------------- | ------------------- |
-| Ubuntu 16.04 LTS | The base system. |
-| A **correct** init process | _Main article: [Docker and the PID 1 zombie reaping problem](http://blog.phusion.nl/2015/01/20/docker-and-the-pid-1-zombie-reaping-problem/)._ <br><br>According to the Unix process model, [the init process](https://en.wikipedia.org/wiki/Init) -- PID 1 -- inherits all [orphaned child processes](https://en.wikipedia.org/wiki/Orphan_process) and must [reap them](https://en.wikipedia.org/wiki/Wait_(system_call)). Most Docker containers do not have an init process that does this correctly, and as a result their containers become filled with [zombie processes](https://en.wikipedia.org/wiki/Zombie_process) over time. <br><br>Furthermore, `docker stop` sends SIGTERM to the init process, which is then supposed to stop all services. Unfortunately most init systems don't do this correctly within Docker since they're built for hardware shutdowns instead. This causes processes to be hard killed with SIGKILL, which doesn't give them a chance to correctly deinitialize things. This can cause file corruption. <br><br>Baseimage-docker comes with an init process `/sbin/my_init` that performs both of these tasks correctly. |
+| Ubuntu ~~16.04~~14.04 LTS | The base system. |
+| A **correct** init process | _Main article: [Docker and the PID 1 zombie reaping problem](http://blog.phusion.nl/2015/01/20/docker-and-the-pid-1-zombie-reaping-problem/)._ <br><br>According to the Unix process model, [the init process](https://en.wikipedia.org/wiki/Init) -- PID 1 -- inherits all [orphaned child processes](https://en.wikipedia.org/wiki/Orphan_process) and must [reap them](https://en.wikipedia.org/wiki/Wait_(system_call)). Most Docker containers do not have an init process that does this correctly, and as a result their containers become filled with [zombie processes](https://en.wikipedia.org/wiki/Zombie_process) over time. <br><br>Furthermore, `docker stop` sends SIGTERM to the init process, which is then supposed to stop all services. Unfortunately most init systems don't do this correctly within Docker since they're built for hardware shutdowns instead. This causes processes to be hard killed with SIGKILL, which doesn't give them a chance to correctly deinitialize things. This can cause file corruption. <br><br>baseimage comes with an init process `/sbin/my_init` that performs both of these tasks correctly. |
 | Fixes APT incompatibilities with Docker | See https://github.com/dotcloud/docker/issues/1024. |
 | syslog-ng | A syslog daemon is necessary so that many services - including the kernel itself - can correctly log to /var/log/syslog. If no syslog daemon is running, a lot of important messages are silently swallowed. <br><br>Only listens locally. All syslog messages are forwarded to "docker logs". |
 | logrotate | Rotates and compresses logs on a regular basis. |
-| SSH server | Allows you to easily login to your container to [inspect or administer](#login_ssh) things. <br><br>_SSH is **disabled by default** and is only one of the methods provided by baseimage-docker for this purpose. The other method is through [docker exec](#login_docker_exec). SSH is also provided as an alternative because `docker exec` comes with several caveats._<br><br>Password and challenge-response authentication are disabled by default. Only key authentication is allowed. |
+| SSH server | Allows you to easily login to your container to [inspect or administer](#login_ssh) things. <br><br>_SSH is **disabled by default** and is only one of the methods provided by baseimage for this purpose. The other method is through [docker exec](#login_docker_exec). SSH is also provided as an alternative because `docker exec` comes with several caveats._<br><br>Password and challenge-response authentication are disabled by default. Only key authentication is allowed. |
 | cron | The cron daemon must be running for cron jobs to work. |
 | [runit](http://smarden.org/runit/) | Replaces Ubuntu's Upstart. Used for service supervision and management. Much easier to use than SysV init and supports restarting daemons when they crash. Much easier to use and more lightweight than Upstart. |
 | `setuser` | A tool for running a command as another user. Easier to use than `su`, has a smaller attack vector than `sudo`, and unlike `chpst` this tool sets `$HOME` correctly. Available as `/sbin/setuser`. |
 
-Baseimage-docker is very lightweight: it only consumes 6 MB of memory.
+baseimage is very lightweight: it only consumes 6 MB of memory.
 
 <a name="docker_single_process"></a>
 ### Wait, I thought Docker is about running a single process in a container?
 
 The Docker developers advocate the philosophy of running a single *logical service* per container. A logical service can consist of multiple OS processes.
 
-Baseimage-docker only advocates running multiple OS processes inside a single container. We believe this makes sense because at the very least it would solve [the PID 1 problem](http://blog.phusion.nl/2015/01/20/docker-and-the-pid-1-zombie-reaping-problem/) and the "syslog blackhole" problem. By running multiple processes, we solve very real Unix OS-level problems, with minimal overhead and without turning the container into multiple logical services.
+baseimage only advocates running multiple OS processes inside a single container. We believe this makes sense because at the very least it would solve [the PID 1 problem](http://blog.phusion.nl/2015/01/20/docker-and-the-pid-1-zombie-reaping-problem/) and the "syslog blackhole" problem. By running multiple processes, we solve very real Unix OS-level problems, with minimal overhead and without turning the container into multiple logical services.
 
-Splitting your logical service into multiple OS processes also makes sense from a security standpoint. By running processes as different users, you can limit the impact of vulnerabilities. Baseimage-docker provides tools to encourage running processes as different users, e.g. the `setuser` tool.
+Splitting your logical service into multiple OS processes also makes sense from a security standpoint. By running processes as different users, you can limit the impact of vulnerabilities. baseimage provides tools to encourage running processes as different users, e.g. the `setuser` tool.
 
-Do we advocate running multiple *logical services* in a single container? Not necessarily, but we do not prohibit it either. While the Docker developers are very opinionated and have very rigid philosophies about how containers *should* be built, Baseimage-docker is completely unopinionated. We believe in freedom: sometimes it makes sense to run multiple services in a single container, and sometimes it doesn't. It is up to you to decide what makes sense, not the Docker developers.
+Do we advocate running multiple *logical services* in a single container? Not necessarily, but we do not prohibit it either. While the Docker developers are very opinionated and have very rigid philosophies about how containers *should* be built, baseimage is completely unopinionated. We believe in freedom: sometimes it makes sense to run multiple services in a single container, and sometimes it doesn't. It is up to you to decide what makes sense, not the Docker developers.
 
 <a name="fat_containers"></a>
-### Does Baseimage-docker advocate "fat containers" or "treating containers as VMs"?
+### Does baseimage advocate "fat containers" or "treating containers as VMs"?
 
-There are people who are under the impression that Baseimage-docker advocates treating containers as VMs, because of the fact that Baseimage-docker advocates the use of multiple processes. Therefore they are also under the impression that Baseimage-docker does not follow the Docker philosophy. Neither of these impressions are true.
+There are people who are under the impression that baseimage advocates treating containers as VMs, because of the fact that baseimage advocates the use of multiple processes. Therefore they are also under the impression that baseimage does not follow the Docker philosophy. Neither of these impressions are true.
 
-The Docker developers advocate running a single *logical service* inside a single container. But we are not disputing that. Baseimage-docker advocates running multiple *OS processes* inside a single container, and a single logical service can consist of multiple OS processes.
+The Docker developers advocate running a single *logical service* inside a single container. But we are not disputing that. baseimage advocates running multiple *OS processes* inside a single container, and a single logical service can consist of multiple OS processes.
 
-It follows from this that Baseimage-docker also does not deny the Docker philosophy. In fact, many of the modifications we introduce are explicitly in line with the Docker philosophy. For example, using environment variables to pass parameters to containers is very much the "Docker way", and provide [a mechanism to easily work with environment variables](#environment_variables) in the presence of multiple processes that may run as different users.
+It follows from this that baseimage also does not deny the Docker philosophy. In fact, many of the modifications we introduce are explicitly in line with the Docker philosophy. For example, using environment variables to pass parameters to containers is very much the "Docker way", and provide [a mechanism to easily work with environment variables](#environment_variables) in the presence of multiple processes that may run as different users.
 
 <a name="inspecting"></a>
-## Inspecting baseimage-docker
+## Inspecting baseimage
 
 To look around in the image, run:
 
-    docker run --rm -t -i phusion/baseimage:<VERSION> /sbin/my_init -- bash -l
+    docker run --rm -t -i hilbert/baseimage:<VERSION> /sbin/my_init -- bash -l
 
-where `<VERSION>` is [one of the baseimage-docker version numbers](https://github.com/phusion/baseimage-docker/blob/master/Changelog.md).
+where `<VERSION>` is ~~[one of the baseimage version numbers](https://github.com/phusion/baseimage/blob/master/Changelog.md)~~ either `devel` or `latest`.
 
-You don't have to download anything manually. The above command will automatically pull the baseimage-docker image from the Docker registry.
+You don't have to download anything manually. The above command will automatically pull the baseimage image from the Docker registry.
 
 <a name="using"></a>
-## Using baseimage-docker as base image
+## Using baseimage as base image
 
 <a name="getting_started"></a>
 ### Getting started
 
-The image is called `phusion/baseimage`, and is available on the Docker registry.
+The image is called `hilbert/baseimage`, and is available on the Docker registry.
 
     # Use phusion/baseimage as base image. To make your builds reproducible, make
     # sure you lock down to a specific version, not to `latest`!
-    # See https://github.com/phusion/baseimage-docker/blob/master/Changelog.md for
-    # a list of version numbers.
-    FROM phusion/baseimage:<VERSION>
+    # See https://github.com/hilbert/baseimage/blob/master/Changelog.md
+    # for a list of version numbers.
+    FROM hilbert/baseimage:<VERSION>
 
-    # Use baseimage-docker's init system.
+    # Use baseimage's init system.
     CMD ["/sbin/my_init"]
 
     # ...put your own build instructions here...
@@ -176,7 +177,7 @@ Note that the shell script must run the daemon **without letting it daemonize/fo
 <a name="running_startup_scripts"></a>
 ### Running scripts during container startup
 
-The baseimage-docker init system, `/sbin/my_init`, runs the following scripts during startup, in the following order:
+The baseimage init system, `/sbin/my_init`, runs the following scripts during startup, in the following order:
 
  * All executable scripts in `/etc/my_init.d`, if this directory exists. The scripts are run in lexicographic order.
  * The script `/etc/rc.local`, if this file exists.
@@ -246,7 +247,7 @@ Here is an example shell session showing you how the dumps look like:
 
     $ docker run -t -i \
       --env FOO=bar --env HELLO='my beautiful world' \
-      phusion/baseimage:<VERSION> /sbin/my_init -- \
+      hilbert/baseimage:<VERSION> /sbin/my_init -- \
       bash -l
     ...
     *** Running bash -l...
@@ -283,9 +284,9 @@ If you are sure that your environment variables don't contain sensitive data, th
 <a name="upgrading_os"></a>
 ### Upgrading the operating system inside the container
 
-Baseimage-docker images contain an Ubuntu 16.04 operating system. You may want to update this OS from time to time, for example to pull in the latest security updates. OpenSSL is a notorious example. Vulnerabilities are discovered in OpenSSL on a regular basis, so you should keep OpenSSL up-to-date as much as you can.
+baseimage images contain an Ubuntu 16.04 operating system. You may want to update this OS from time to time, for example to pull in the latest security updates. OpenSSL is a notorious example. Vulnerabilities are discovered in OpenSSL on a regular basis, so you should keep OpenSSL up-to-date as much as you can.
 
-While we release Baseimage-docker images with the latest OS updates from time to time, you do not have to rely on us. You can update the OS inside Baseimage-docker images yourself, and it is recommend that you do this instead of waiting for us.
+While we release baseimage images with the latest OS updates from time to time, you do not have to rely on us. You can update the OS inside baseimage images yourself, and it is recommend that you do this instead of waiting for us.
 
 To upgrade the OS in the image, run this in your Dockerfile:
 
@@ -307,7 +308,7 @@ Normally, when you want to create a new container in order to run a single comma
 
 However the downside of this approach is that the init system is not started. That is, while invoking `COMMAND`, important daemons such as cron and syslog are not running. Also, orphaned child processes are not properly reaped, because `COMMAND` is PID 1.
 
-Baseimage-docker provides a facility to run a single one-shot command, while solving all of the aforementioned problems. Run a single command in the following manner:
+baseimage provides a facility to run a single one-shot command, while solving all of the aforementioned problems. Run a single command in the following manner:
 
     docker run YOUR_IMAGE /sbin/my_init -- COMMAND ARGUMENTS ...
 
@@ -320,7 +321,7 @@ This will perform the following:
 
 For example:
 
-    $ docker run phusion/baseimage:<VERSION> /sbin/my_init -- ls
+    $ docker run hilbert/baseimage:<VERSION> /sbin/my_init -- ls
     *** Running /etc/rc.local...
     *** Booting runit daemon...
     *** Runit started as PID 80
@@ -334,7 +335,7 @@ You may find that the default invocation is too noisy. Or perhaps you don't want
 
 The following example runs `ls` without running the startup files and with less messages, while running all runit services:
 
-    $ docker run phusion/baseimage:<VERSION> /sbin/my_init --skip-startup-files --quiet -- ls
+    $ docker run hilbert/baseimage:<VERSION> /sbin/my_init --skip-startup-files --quiet -- ls
     bin  boot  dev  etc  home  image  lib  lib64  media  mnt  opt  proc  root  run  sbin  selinux  srv  sys  tmp  usr  var
 
 <a name="run_inside_existing_container"></a>
@@ -350,14 +351,14 @@ Both way have their own pros and cons, which you can learn in their respective s
 <a name="login_docker_exec"></a>
 ### Login to the container, or running a command inside it, via `docker exec`
 
-You can use the `docker exec` tool on the Docker host OS to login to any container that is based on baseimage-docker. You can also use it to run a command inside a running container. `docker exec` works by using Linux kernel system calls.
+You can use the `docker exec` tool on the Docker host OS to login to any container that is based on baseimage. You can also use it to run a command inside a running container. `docker exec` works by using Linux kernel system calls.
 
 Here's how it compares to [using SSH to login to the container or to run a command inside it](#login_ssh):
 
  * Pros
    * Does not require running an SSH daemon inside the container.
    * Does not require setting up SSH keys.
-   * Works on any container, even containers not based on baseimage-docker.
+   * Works on any container, even containers not based on baseimage.
  * Cons
    * If the `docker exec` process on the host is terminated by a signal (e.g. with the `kill` command or even with Ctrl-C), then the command that is executed by `docker exec` is *not* killed and cleaned up. You will either have to do that manually, or you have to run `docker exec` with `-t -i`.
    * Requires privileges on the Docker host to be able to access the Docker daemon. Note that anybody who can access the Docker daemon effectively has root access.
@@ -385,123 +386,7 @@ To open a bash session inside the container, you must pass `-t -i` so that a ter
 <a name="login_ssh"></a>
 ### Login to the container, or running a command inside it, via SSH
 
-You can use SSH to login to any container that is based on baseimage-docker. You can also use it to run a command inside a running container.
-
-Here's how it compares to [using `docker exec` to login to the container or to run a command inside it](#login_docker_exec):
-
- * Pros
-   * Does not require root privileges on the Docker host.
-   * Allows you to let users login to the container, without letting them login to the Docker host. However, this is not enabled by default because baseimage-docker does not expose the SSH server to the public Internet by default.
- * Cons
-   * Requires setting up SSH keys. However, baseimage-docker makes this easy for many cases through a pregenerated, insecure key. Read on to learn more.
-
-<a name="enabling_ssh"></a>
-#### Enabling SSH
-
-Baseimage-docker disables the SSH server by default. Add the following to your Dockerfile to enable it:
-
-    RUN rm -f /etc/service/sshd/down
-
-    # Regenerate SSH host keys. baseimage-docker does not contain any, so you
-    # have to do that yourself. You may also comment out this instruction; the
-    # init system will auto-generate one during boot.
-    RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
-
-<a name="ssh_keys"></a>
-#### About SSH keys
-
-First, you must ensure that you have the right SSH keys installed inside the container. By default, no keys are installed, so nobody can login. For convenience reasons, we provide [a pregenerated, insecure key](https://github.com/phusion/baseimage-docker/blob/master/image/services/sshd/keys/insecure_key) [(PuTTY format)](https://github.com/phusion/baseimage-docker/blob/master/image/services/sshd/keys/insecure_key.ppk) that you can easily enable. However, please be aware that using this key is for convenience only. It does not provide any security because this key (both the public and the private side) is publicly available. **In production environments, you should use your own keys**.
-
-<a name="using_the_insecure_key_for_one_container_only"></a>
-#### Using the insecure key for one container only
-
-You can temporarily enable the insecure key for one container only. This means that the insecure key is installed at container boot. If you `docker stop` and `docker start` the container, the insecure key will still be there, but if you use `docker run` to start a new container then that container will not contain the insecure key.
-
-Start a container with `--enable-insecure-key`:
-
-    docker run YOUR_IMAGE /sbin/my_init --enable-insecure-key
-
-Find out the ID of the container that you just ran:
-
-    docker ps
-
-Once you have the ID, look for its IP address with:
-
-    docker inspect -f "{{ .NetworkSettings.IPAddress }}" <ID>
-
-Now that you have the IP address, you can use SSH to login to the container, or to execute a command inside it:
-
-    # Download the insecure private key
-    curl -o insecure_key -fSL https://github.com/phusion/baseimage-docker/raw/master/image/services/sshd/keys/insecure_key
-    chmod 600 insecure_key
-
-    # Login to the container
-    ssh -i insecure_key root@<IP address>
-
-    # Running a command inside the container
-    ssh -i insecure_key root@<IP address> echo hello world
-
-<a name="enabling_the_insecure_key_permanently"></a>
-#### Enabling the insecure key permanently
-
-It is also possible to enable the insecure key in the image permanently. This is not generally recommended, but is suitable for e.g. temporary development or demo environments where security does not matter.
-
-Edit your Dockerfile to install the insecure key permanently:
-
-    RUN /usr/sbin/enable_insecure_key
-
-Instructions for logging in the container is the same as in section [Using the insecure key for one container only](#using_the_insecure_key_for_one_container_only).
-
-<a name="using_your_own_key"></a>
-#### Using your own key
-
-Edit your Dockerfile to install an SSH public key:
-
-    ## Install an SSH of your choice.
-    ADD your_key.pub /tmp/your_key.pub
-    RUN cat /tmp/your_key.pub >> /root/.ssh/authorized_keys && rm -f /tmp/your_key.pub
-
-Then rebuild your image. Once you have that, start a container based on that image:
-
-    docker run your-image-name
-
-Find out the ID of the container that you just ran:
-
-    docker ps
-
-Once you have the ID, look for its IP address with:
-
-    docker inspect -f "{{ .NetworkSettings.IPAddress }}" <ID>
-
-Now that you have the IP address, you can use SSH to login to the container, or to execute a command inside it:
-
-    # Login to the container
-    ssh -i /path-to/your_key root@<IP address>
-
-    # Running a command inside the container
-    ssh -i /path-to/your_key root@<IP address> echo hello world
-
-<a name="docker_ssh"></a>
-#### The `docker-ssh` tool
-
-Looking up the IP of a container and running an SSH command quickly becomes tedious. Luckily, we provide the `docker-ssh` tool which automates this process. This tool is to be run on the *Docker host*, not inside a Docker container.
-
-First, install the tool on the Docker host:
-
-    curl --fail -L -O https://github.com/phusion/baseimage-docker/archive/master.tar.gz && \
-    tar xzf master.tar.gz && \
-    sudo ./baseimage-docker-master/install-tools.sh
-
-Then run the tool as follows to login to a container using SSH:
-
-    docker-ssh YOUR-CONTAINER-ID
-
-You can lookup `YOUR-CONTAINER-ID` by running `docker ps`.
-
-By default, `docker-ssh` will open a Bash session. You can also tell it to run a command, and then exit:
-
-    docker-ssh YOUR-CONTAINER-ID echo hello world
-
+This ~~back door~~functionality hase been removed from the original Phusion's baseimage!
 
 <a name="building"></a>
 ## Building the image yourself
@@ -510,14 +395,8 @@ If for whatever reason you want to build the image yourself instead of downloadi
 
 Clone this repository:
 
-    git clone https://github.com/phusion/baseimage-docker.git
-    cd baseimage-docker
-
-Start a virtual machine with Docker in it. You can use the Vagrantfile that we've already provided.
-
-    vagrant up
-    vagrant ssh
-    cd /vagrant
+    git clone https://github.com/hilbert/baseimage.git
+    cd baseimage
 
 Build the image:
 
@@ -530,29 +409,30 @@ If you want to call the resulting image something else, pass the NAME variable, 
 <a name="removing_optional_services"></a>
 ### Removing optional services
 
-The default baseimage-docker installs `syslog-ng`, `cron` and `sshd` services during the build process.
+The default baseimage installs `syslog-ng`, `cron` and `sshd` services during the build process.
 
 In case you don't need one or more of these services in your image, you can disable its installation.
 
-As shown in the following example, to prevent `sshd` from being installed into your image, set `1` to the `DISABLE_SSH` variable in the `./image/buildconfig` file.
+As shown in the following example, to prevent `cron` from being installed into your image, set `1` to the `DISABLE_CRON` variable in the `./image/buildconfig` file.
 
     ### In ./image/buildconfig
     # ...
     # Default services
     # Set 1 to the service you want to disable
     export DISABLE_SYSLOG=0
-    export DISABLE_SSH=1
-    export DISABLE_CRON=0
+    export DISABLE_CRON=1
 
 Then you can proceed with `make build` command.
 
 <a name="conclusion"></a>
 ## Conclusion
 
- * Using baseimage-docker? [Tweet about us](https://twitter.com/share) or [follow us on Twitter](https://twitter.com/phusion_nl).
+ * Using baseimage? [Tweet about us](https://twitter.com/share) or [follow us on Twitter](https://twitter.com/phusion_nl).
  * Having problems? Want to participate in development? Please post a message at [the discussion forum](https://groups.google.com/d/forum/passenger-docker).
  * Looking for a more complete base image, one that is ideal for Ruby, Python, Node.js and Meteor web apps? Take a look at [passenger-docker](https://github.com/phusion/passenger-docker).
 
 [<img src="http://www.phusion.nl/assets/logo.png">](http://www.phusion.nl/)
 
-Please enjoy baseimage-docker, a product by [Phusion](http://www.phusion.nl/). :-)
+Please enjoy baseimage, a product by [Hilbert Team](http://www.phusion.nl/). :-)
+
+
