@@ -1,0 +1,24 @@
+sudo: required
+
+services:
+  - docker
+
+env:
+  global:
+    # - NAME=phusion/baseimage
+    # - VERSION=${TRAVIS_TAG}
+    - IMAGE_VERSION=${TRAVIS_BRANCH}
+
+# before_install:
+
+script:
+  - make build
+  - make check
+
+#after_success:
+# - docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}";
+#   docker push ${NAME}:${VERSION};
+# - if [ "${TRAVIS_BRANCH}" == "master" ]; then
+#   docker tag ${NAME}:${VERSION} ${NAME}:latest
+#   docker push ${NAME}:latest;
+#   fi

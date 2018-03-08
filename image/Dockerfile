@@ -1,13 +1,18 @@
 FROM ubuntu:14.04
 MAINTAINER Oleksandr Motsak <malex984+hilbert.baseimage@gmail.com>
 
-ADD . /bd_build
+COPY . /bd_build
 
-RUN /bd_build/prepare.sh && \
-	/bd_build/system_services.sh && \
-	/bd_build/utilities.sh && \
-	/bd_build/fix_pam_bug.sh && \
-	/bd_build/cleanup.sh
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* \
+&& /bd_build/prepare.sh \
+&& /bd_build/system_services.sh \
+&& /bd_build/utilities.sh \
+&& /bd_build/cleanup.sh
+
+ENV DEBIAN_FRONTEND="teletype" \
+    LANG="en_US.UTF-8" \
+    LANGUAGE="en_US:en" \
+    LC_ALL="en_US.UTF-8"
 
 CMD ["/sbin/my_init"]
 
